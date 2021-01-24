@@ -1,4 +1,4 @@
-Posts:
+<a href="{{ url_for('create') }}">Create thread</a>
 {% for post in posts %}
     <h3>{{ post['id'] }}</h3>
     <p>{{ post['body'] }}</p>
