@@ -2,6 +2,8 @@ from manage import db
 
 
 class Post(db.Model):
+    __tablename__ = 'posts'
+
     id = db.Column(db.Integer, primary_key=True)
     parent_id = db.Column(db.Integer)
     media_url = db.Column(db.String(255))
