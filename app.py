@@ -5,6 +5,7 @@ import database
 import commands
 from models import Post, create_post
 from sqlalchemy import desc
+from flask_imgur.flask_imgur import Imgur
 
 # init flask
 app = Flask(__name__)
@@ -13,11 +14,7 @@ app.config.from_object(os.environ['APP_SETTINGS'])
 # setup dependencies
 database.init_app(app)
 commands.init_app(app)
-
-
-def verify_media_url(url):
-    from urllib.parse import urlparse
-    return urlparse(url).netloc == 'i.imgur.com'
+imgur_handler = Imgur(app)
 
 
 @app.route('/')
@@ -30,14 +27,21 @@ def index():
 def view(id):
     if request.method == 'POST':
         body = request.form['body']
-        media_url = request.form['media_url']
+        image = request.files['media']
 
         if not body:
             flash('Body is required.')
-        elif media_url and not verify_media_url(media_url):
-            flash('Media must be an i.imgur.com url')
+        elif image.filename:
+            image = request.files['media']
+            image_data = imgur_handler.send_image(image)
+
+            if image_data['success']:
+                create_post(body=body, parent_id=id, media_url=image_data['data']['link'])
+                return redirect(url_for('view', id=id))  # fix for refresh resend
+            else:
+                flash('Failed to upload image to imgur')
         else:
-            create_post(body=body, parent_id=id, media_url=media_url)
+            create_post(body=body, parent_id=id)
             return redirect(url_for('view', id=id))  # fix for refresh resend
 
     return render_template('view.html',
@@ -49,17 +53,24 @@ def create():
     if request.method == 'POST':
         title = request.form['title']
         body = request.form['body']
-        media_url = request.form['media_url']
+        image = request.files['media']
 
         if not title or not title.strip():
             flash('Title is required.')
         elif not body or not body.strip():
             flash('Body is required.')
-        elif media_url and not verify_media_url(media_url):
-            flash('Media must be an i.imgur.com URL')
+        elif image.filename:
+            image_data = imgur_handler.send_image(image)
+
+            if image_data['success']:
+                create_post(title=title, body=body, media_url=image_data['data']['link'])
+                return redirect(url_for('index'))
+            else:
+                flash('Failed to upload image to imgur')
         else:
-            create_post(title=title, body=body, media_url=media_url)
+            create_post(title=title, body=body)
             return redirect(url_for('index'))
+
     return render_template('create.html')
 
 

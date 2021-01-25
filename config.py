@@ -8,6 +8,7 @@ class Config(object):
     CSRF_ENABLED = True
     SECRET_KEY = 'KEK'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    IMGUR_ID = '4e8608bc58aa224'
 
 
 class ProductionConfig(Config):

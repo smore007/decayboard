@@ -1,13 +1,14 @@
 {% extends 'base.html' %}
+{% block title %}Create{% endblock %}
 {% block content %}
-<form method="post">
+<form method="post" enctype=multipart/form-data>
     <div class="mb-3">
         <label for="title" class="form-label">Title</label>
         <input type="text" class="form-control" name="title" required>
     </div>
     <div class="mb-3">
-        <label for="title" class="form-label">Media URL <small>(optional)</small></label>
-        <input type="text" class="form-control" name="media_url">
+        <label for="media" class="form-label">Media <small>(optional)</small></label>
+        <input type="file" class="form-control" name="media">
     </div>
     <div class="mb-3">
         <label for="body" class="form-label">Body</label>

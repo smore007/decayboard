@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% block title %}{{ posts[0]['title'] }}{% endblock %}
 {% block content %}
     <script>
         function addText(id) {
@@ -52,13 +53,15 @@
         <p>{{ post['body'] }}</p>
         <hr>
     {% endfor %}
-    <form method="post">
-    <div class="mb-3">
-        <textarea class="form-control" name="body" id="reply" rows="5" required></textarea>
-    </div>
-    <div class="mb-3">
-        <input type="text" class="form-control" name="media_url" placeholder="Optional Media URL">
-    </div>
-    <button type="submit" class="btn btn-primary">Reply</button>
-</form>
+    <form method="post" enctype=multipart/form-data>
+        <div class="mb-3">
+            <label for="body" class="form-label">Reply</label>
+            <textarea class="form-control" name="body" id="reply" rows="5" required></textarea>
+        </div>
+        <div class="mb-3">
+            <label for="media" class="form-label">Media <small>(optional)</small></label>
+            <input type="file" class="form-control" name="media">
+        </div>
+        <button type="submit" class="btn btn-primary">Reply</button>
+    </form>
 {% endblock %}
