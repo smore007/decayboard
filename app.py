@@ -25,14 +25,17 @@ def index():
 def view(id):
     if request.method == 'POST':
         body = request.form['body']
+        media_url = request.form['media_url']
 
         if not body:
             flash("Body is required.")
         else:
-            p = Post(body=body, parent_id=id)
+            p = Post(body=body, parent_id=id, media_url=media_url)
 
             db.session.add(p)
             db.session.commit()
+
+            return redirect(url_for('view', id=id))  # fix for refresh resend
 
     return render_template('view.html',
                            posts=Post.query.filter((Post.id == id) | (Post.parent_id == id)).all())
@@ -43,6 +46,7 @@ def create():
     if request.method == 'POST':
         title = request.form['title']
         body = request.form['body']
+        media_url = request.form['media_url']
 
         error = None
         if not title or not title.strip():
@@ -53,7 +57,7 @@ def create():
         if error is not None:
             flash(error)
         else:
-            p = Post(title=title, body=body)
+            p = Post(title=title, body=body, media_url=media_url)
 
             db.session.add(p)
             db.session.commit()
@@ -88,13 +92,16 @@ def logout():
     return redirect(url_for('index'))
 
 
-@app.route('/<int:id>/delete')
+@app.route('/<int:id>/delete', methods=('POST',))
 def delete(id):
-    print(Post.query.filter((Post.id == id) | (Post.parent_id == id)).delete())
-    db.session.commit()
-
-    return redirect(url_for('index'))
+    if g.is_admin:
+        Post.query.filter((Post.id == id) | (Post.parent_id == id)).delete()
+        db.session.commit()
+        return redirect(request.args.get('next'))
+    else:
+        flash('You must be admin!')
+        return redirect(url_for('index'))
 
 
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True)

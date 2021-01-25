@@ -4,13 +4,18 @@
         {% for post in posts %}
             <div class="col-sm-6 col-lg-4 mb-4">
                 <div class="card">
+                    {% if post['media_url'] and  post['media_url']|length %}
+                        <a href="{{ url_for('view', id=post['id']) }}"><img class="card-img-top" src="{{ post['media_url'] }}"></a>
+                    {% endif %}
                     <div class="card-body">
                         {% if g.is_admin %}
-                            <a href="{{ url_for('delete', id=post['id']) }}">
-                                <svg style="float: right; color: red" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16">
-                                    <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1H2.5zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zM8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5zm3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0z"/>
-                                </svg>
-                            </a>
+                            <form action="{{ url_for('delete', id=post['id'], next=request.path) }}" method="POST">
+                                <button class="btn" type="submit" style="float: right">
+                                    <svg style="color: red" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16">
+                                        <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1H2.5zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zM8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5zm3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0z"/>
+                                    </svg>
+                                </button>
+                            </form>
                         {% endif %}
                         <a href="{{ url_for('view', id=post['id']) }}"><h5 class="card-title nice-link">{{ post['title'] }}</h5></a>
                         <h6 class="card-subtitle mb-2 text-muted">#{{ post['id'] }} at {{ post['created_at'].strftime('%b %e %I:%M %p') }}</h6>
