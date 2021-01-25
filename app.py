@@ -1,38 +1,99 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, flash, session, g
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import desc, asc
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres://zyxznyonpytfnf:6a05f4e3f7997bd3f4c1f995f7f0fae3d28d4202b8294212fbbc22d1379e737a@ec2-52-23-86-208.compute-1.amazonaws.com:5432/d5a8pr2slh4f23'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///Post.sqlite3'
+app.secret_key = 'KEK'
 
 db = SQLAlchemy(app)
-
-from models import Post
-
-
-def get_posts(parent_id=None):
-    return Post.query.filter(Post.parent_id is parent_id).all()
 
 
 @app.route('/')
 def index():
-    return render_template('index.html', posts=get_posts())
+    from models import Post
+    return render_template('index.html',
+                           posts=Post.query.filter(Post.parent_id == None).order_by(desc(Post.created_at)).all())
+
+
+@app.route('/<int:id>/', methods=('GET', 'POST'))
+def view(id):
+    from models import Post
+    if request.method == 'POST':
+        body = request.form['body']
+
+        if not body:
+            flash("Body is required.")
+        else:
+            p = Post(body=body, parent_id=id)
+
+            db.session.add(p)
+            db.session.commit()
+
+    return render_template('view.html',
+                           posts=Post.query.filter((Post.id == id) | (Post.parent_id == id)).all())
 
 
 @app.route('/create', methods=('GET', 'POST'))
 def create():
     if request.method == 'POST':
+        from models import Post
         title = request.form['title']
         body = request.form['body']
 
-        p = Post(title=title, body=body)
+        error = None
+        if not title or not title.strip():
+            error = "Title is required."
+        elif not body or not body.strip():
+            error = "Body is required."
 
-        db.session.add(p)
-        db.session.commit()
+        if error is not None:
+            flash(error)
+        else:
+            p = Post(title=title, body=body)
 
-        return redirect(url_for('index'))
+            db.session.add(p)
+            db.session.commit()
+
+            return redirect(url_for('index'))
     return render_template('create.html')
 
 
+@app.before_request
+def load_admin():
+    if session.get('is_admin'):
+        g.is_admin = True
+    else:
+        g.is_admin = False
+
+
+@app.route('/login', methods=('GET', 'POST'))
+def login():
+    if request.method == 'POST':
+        if request.form['password'] == 'kek':
+            session['is_admin'] = True
+            return redirect(url_for('index'))
+        else:
+            flash('Incorrect password')
+
+    return render_template('login.html')
+
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('index'))
+
+
+@app.route('/<int:id>/delete')
+def delete(id):
+    from models import Post
+    print(Post.query.filter((Post.id == id) | (Post.parent_id == id)).delete())
+    db.session.commit()
+
+    return redirect(url_for('index'))
+
+
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True)

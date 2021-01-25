@@ -1,5 +1,14 @@
+{% extends 'base.html' %}
+{% block content %}
 <form method="post">
-    <input type="text" name="title"><br>
-    <textarea name="body" required></textarea><br>
-    <input type="submit" value="Submit">
+    <div class="mb-3">
+        <label for="title" class="form-label">Title</label>
+        <input type="text" class="form-control" name="title" required>
+    </div>
+    <div class="mb-3">
+        <label for="body" class="form-label">Body</label>
+        <textarea class="form-control" rows="8" name="body" required></textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">Submit</button>
 </form>
+{% endblock %}
