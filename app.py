@@ -1,14 +1,18 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session, g
+import os
 from database import db
 import database
+import commands
 from models import Post
 from sqlalchemy import desc
 
+# init flask
 app = Flask(__name__)
+app.config.from_object(os.environ['APP_SETTINGS'])
+
+# setup dependencies
 database.init_app(app)
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres://nxytkuntklroyq:7e6e9d6b13d74757499a34c4774f2025b50e3d34fbdd102b2c7fa091ec9ceea6@ec2-54-82-208-124.compute-1.amazonaws.com:5432/d74lh90jcnvjl6'
-app.secret_key = 'KEK'
+commands.init_app(app)
 
 
 @app.route('/')
@@ -93,4 +97,4 @@ def delete(id):
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run()

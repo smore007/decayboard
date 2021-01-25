@@ -15,7 +15,3 @@ class Post(db.Model):
         self.body = body
         self.media_url = media_url
         self.parent_id = parent_id
-
-
-if __name__ == '__main__':
-    db.create_all()
