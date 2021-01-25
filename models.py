@@ -15,3 +15,11 @@ class Post(db.Model):
         self.body = body
         self.media_url = media_url
         self.parent_id = parent_id
+
+
+def create_post(title=None, body=None, media_url=None, parent_id=None):
+    p = Post(title=title, body=body, media_url=media_url, parent_id=parent_id)
+    db.session.add(p)
+    db.session.commit()
+
+

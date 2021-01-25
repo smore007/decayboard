@@ -3,7 +3,7 @@ import os
 from database import db
 import database
 import commands
-from models import Post
+from models import Post, create_post
 from sqlalchemy import desc
 
 # init flask
@@ -13,6 +13,11 @@ app.config.from_object(os.environ['APP_SETTINGS'])
 # setup dependencies
 database.init_app(app)
 commands.init_app(app)
+
+
+def verify_media_url(url):
+    from urllib.parse import urlparse
+    return urlparse(url).netloc == 'i.imgur.com'
 
 
 @app.route('/')
@@ -28,13 +33,11 @@ def view(id):
         media_url = request.form['media_url']
 
         if not body:
-            flash("Body is required.")
+            flash('Body is required.')
+        elif media_url and not verify_media_url(media_url):
+            flash('Media must be an i.imgur.com url')
         else:
-            p = Post(body=body, parent_id=id, media_url=media_url)
-
-            db.session.add(p)
-            db.session.commit()
-
+            create_post(body=body, parent_id=id, media_url=media_url)
             return redirect(url_for('view', id=id))  # fix for refresh resend
 
     return render_template('view.html',
@@ -48,20 +51,14 @@ def create():
         body = request.form['body']
         media_url = request.form['media_url']
 
-        error = None
         if not title or not title.strip():
-            error = "Title is required."
+            flash('Title is required.')
         elif not body or not body.strip():
-            error = "Body is required."
-
-        if error is not None:
-            flash(error)
+            flash('Body is required.')
+        elif media_url and not verify_media_url(media_url):
+            flash('Media must be an i.imgur.com URL')
         else:
-            p = Post(title=title, body=body, media_url=media_url)
-
-            db.session.add(p)
-            db.session.commit()
-
+            create_post(title=title, body=body, media_url=media_url)
             return redirect(url_for('index'))
     return render_template('create.html')
 
