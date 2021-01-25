@@ -1,25 +1,24 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session, g
-from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import desc, asc
+from database import db
+import database
+from models import Post
+from sqlalchemy import desc
 
 app = Flask(__name__)
+database.init_app(app)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres://nxytkuntklroyq:7e6e9d6b13d74757499a34c4774f2025b50e3d34fbdd102b2c7fa091ec9ceea6@ec2-54-82-208-124.compute-1.amazonaws.com:5432/d74lh90jcnvjl6'
 app.secret_key = 'KEK'
 
-db = SQLAlchemy(app)
-
 
 @app.route('/')
 def index():
-    from models import Post
     return render_template('index.html',
                            posts=Post.query.filter(Post.parent_id == None).order_by(desc(Post.created_at)).all())
 
 
 @app.route('/<int:id>/', methods=('GET', 'POST'))
 def view(id):
-    from models import Post
     if request.method == 'POST':
         body = request.form['body']
 
@@ -38,7 +37,6 @@ def view(id):
 @app.route('/create', methods=('GET', 'POST'))
 def create():
     if request.method == 'POST':
-        from models import Post
         title = request.form['title']
         body = request.form['body']
 
@@ -88,7 +86,6 @@ def logout():
 
 @app.route('/<int:id>/delete')
 def delete(id):
-    from models import Post
     print(Post.query.filter((Post.id == id) | (Post.parent_id == id)).delete())
     db.session.commit()
 
